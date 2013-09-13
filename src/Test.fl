@@ -1,0 +1,10 @@
+(package default 
+         (import flash.display.Sprite) 
+         (import flash.text.TextField) 
+         (class public Object Test 
+                (class-init Test (a) (let ([text_field (new TextField)]) 
+                             (begin 
+                               (set! text_field.text "I'm back"))))))
+
+(class inner Object foo)
+

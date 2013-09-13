@@ -1,0 +1,9 @@
+<!-- Test.html --> 
+<html> 
+    <body> 
+        <object height='100%' width='100%'>
+            <embed src='@swf_path' height='100%' width='100%'/>
+        </object>
+    </body> 
+</html> 
+  
