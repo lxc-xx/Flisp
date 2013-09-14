@@ -1,17 +1,16 @@
 #!/usr/bin/env racket
 #lang racket
+(provide compile-expression)
 (provide compile)
 (require "utils.rkt")
 (require "keywords.rkt")
-(module+ main
-         ;(require rackunit)
-         (require racket/trace))
+(require "check.rkt")
+
+(define (compile fl [indent 0])
+    (begin (string-join (map (lambda (x) (compile-expression x indent)) fl) "\n")))
 
 (define (make-indent n)
   (make-string (* n 4) #\ ))
-
-(define (compile fl [indent 0])
-  (begin (string-join (map (lambda (x) (compile-expression x indent)) fl) "\n")))
 
 (define (compile-expression fl [indent 0])
   (if (empty? fl)
@@ -22,9 +21,9 @@
         [(eq? head KW_PACKAGE) (compile-package (cdr fl) indent)]
         [(eq? head KW_IMPORT) (compile-import (cdr fl) indent)]
         [(eq? head KW_CLASS) (compile-class (cdr fl) indent)]
-        [(eq? head KW_CLASS_INIT) (compile-class-init (cdr fl) indent)]
-        ;[(eq? head KW_CLASS_METHOD) (compile-class-method (cdr fl) indent)]
-        [(eq? head KW_CLASS_VAR) (compile-class-var (cdr fl) indent)]
+        [(eq? head KW_INIT) (compile-init (cdr fl) indent)]
+        [(eq? head KW_METHOD) (compile-method (cdr fl) indent)]
+        [(eq? head KW_FIELD) (compile-field (cdr fl) indent)]
         [(eq? head KW_DEFINE) (compile-define (cdr fl) indent)]
         [(eq? head KW_VAR) (compile-var (cdr fl) indent)]
         [(eq? head KW_SET!) (compile-set! (cdr fl) indent)]
@@ -121,11 +120,11 @@
                      (compile body (+ indent 1))
                      (string-append (make-indent indent) "}")))))
 (module+ main
-         ;(display (compile-expression '(class public Object Test ())))
+         (display (compile-expression '(class public Object Test ())))
          )
 
 ;(class-init class-name (arg1 arg2 ...) ...)
-(define (compile-class-init fl [indent 0])
+(define (compile-init fl [indent 0])
   (if (not (>= (length fl) 2))
     (error "Class-init is invalid")
     (let ([class-name (car fl)]
@@ -148,6 +147,7 @@
                      (string-append (make-indent indent) 
                                     "}"
                                     )))))
+
 (module+ main
          ;(display (compile-expression '(class-init Test (a b c)) 1))
          )
@@ -172,12 +172,40 @@
     (string-append "\n" (compile-expression fl (+ indent 1)))
     (~s fl)))
 
-;(class-method method-name (arg1 arg2 ...) ...)
-(define (compile-class-method fl [indent 0]) 
-  )
+
+(define (check-method-modifier m)
+  (cond [(eq? m KW_PUBLIC) "public"]
+        [(eq? m KW_PRIVATE) "private"]
+        [(eq? m KW_PROTECTED) "protected"]
+        [else (error "Invalid method modifier")]))
+
+;(class-method method-name modifier (arg1 arg2 ...) ...)
+(define (compile-method fl [indent 0])
+  (let ([name (car fl)]
+        [modifier (cadr fl)]
+        [argv (caddr fl)]
+        [body (cdddr fl)])
+      (string-append (string-append (make-indent indent)
+                                    (check-method-modifier modifier)
+                                    " function "
+                                    (~s name)
+                                    " (" 
+                                    (string-join (map (lambda (arg) 
+                                                        (string-append (~s arg) ":*")) 
+                                                      argv) 
+                                                 ", ") 
+                                    "):*{\n")
+                     (compile-return-body body (+ indent 1))
+                     (string-append "\n" 
+                                    (make-indent indent)
+                                    "}"))))
+(module+ main
+         ;(display (compile-expression '(method foo public (a b c) (+ a b c))))
+         )
+
 
 ;(class-var variable initial-value)
-(define (compile-class-var fl [indent 0])
+(define (compile-field fl [indent 0])
   (if (not (= (length fl) 2))
     (error "Class-var expression is invalid")
     (let ([variable (car fl)]
@@ -231,7 +259,7 @@
                    ";")))
 
 (module+ main
-         (display (compile-expression '(set! a 1)))
+         ;(display (compile-expression '(set! a 1)))
          )
 
 ;;;;;;;;;;;;;;;;;Value Statement;;;;;;;;;;;;;;;;;;
@@ -431,4 +459,3 @@
 
 (module+ main
          )
-

@@ -8,13 +8,14 @@
 (define KW_DEFAULT 'default);done
 (define KW_PUBLIC 'public);done
 (define KW_PRIVATE 'private)
-(define KW_STAIC 'static)
+(define KW_PROTECTED 'protected)
+(define KW_STATIC 'static)
 (define KW_INNER 'inner);done
 (define KW_IMPORT 'import);done
 (define KW_CLASS 'class);done
-(define KW_CLASS_INIT 'class-init);done
-(define KW_CLASS_METHOD 'class-method)
-(define KW_CLASS_VAR 'class-var);done
+(define KW_INIT 'init);done
+(define KW_METHOD 'method)
+(define KW_FIELD 'field);done
 (define KW_DEFINE 'define);done
 (define KW_VAR 'var);done
 (define KW_SET! 'set!);done
@@ -22,14 +23,15 @@
   (list KW_PACKAGE
         KW_DEFAULT
         KW_PUBLIC
-        KW_STATIC
         KW_PRIVATE
+        KW_PROTECTED
+        KW_STATIC
         KW_INNER
         KW_IMPORT
         KW_CLASS
-        KW_CLASS_INIT
-        KW_CLASS_METHOD
-        KW_CLASS_VAR
+        KW_INIT
+        KW_METHOD
+        KW_FIELD
         KW_DEFINE
         KW_VAR
         KW_SET!))
@@ -88,6 +90,7 @@
 (define KW_SMALLER_THAN '<)
 (define KW_SMALLER_EQUAL_THAN '<=)
 (define KW_EQUAL '=)
+(define KW_UNEQUAL '!=)
 (define BOOLEAN_OPERATORS;done
   (list KW_AND
         KW_OR
@@ -96,7 +99,10 @@
         KW_LARGER_EQUAL_THAN
         KW_SMALLER_THAN
         KW_SMALLER_EQUAL_THAN
-        KW_EQUAL))
+        KW_EQUAL
+        KW_UNEQUAL
+        ))
+
 (define (boolean-operator? op)
   (make-boolean (member op BOOLEAN_OPERATORS)))
 
@@ -124,8 +130,19 @@
         KW_FILTER
         KW_REDUCE
         KW_RANGE))
+
 (define (built-in-function? f)
   (make-boolean (member f BUILT_IN_FUNCTIONS)))
+
+
+(define CORE_KEYWORDS
+  (append KEYWORDS_NON_VALUE 
+          CONSTRUCTIVE_KEYWORDS
+          BOOLEAN_OPERATORS 
+          ARITHMATIC_OPERATORS))
+
+(define (core-keyword? f)
+  (make-boolean (member f CORE_KEYWORDS)))
 
 (define KEYWORDS_VALUE
   (append CONSTRUCTIVE_KEYWORDS
@@ -133,8 +150,14 @@
           BUILT_IN_FUNCTIONS
           ARITHMATIC_OPERATORS))
 
+(define (keyword-value? f)
+  (make-boolean (member f KEYWORDS_VALUE)))
+
 (define KEY_WORDS
   (append KEYWORDS_NON_VALUE
           KEYWORDS_VALUE))
+
+(define (key-word? f)
+  (make-boolean (member f KEY_WORDS)))
 
 (module+ main)
