@@ -7,19 +7,23 @@
 (define KW_PACKAGE 'package);done
 (define KW_DEFAULT 'default);done
 (define KW_PUBLIC 'public);done
+(define KW_PRIVATE 'private)
+(define KW_STAIC 'static)
 (define KW_INNER 'inner);done
 (define KW_IMPORT 'import);done
 (define KW_CLASS 'class);done
 (define KW_CLASS_INIT 'class-init);done
 (define KW_CLASS_METHOD 'class-method)
-(define KW_CLASS_VAR 'class-var)
-(define KW_DEFINE 'define)
-(define KW_VAR 'var)
-(define KW_SET! 'set!)
+(define KW_CLASS_VAR 'class-var);done
+(define KW_DEFINE 'define);done
+(define KW_VAR 'var);done
+(define KW_SET! 'set!);done
 (define KEYWORDS_NON_VALUE
   (list KW_PACKAGE
         KW_DEFAULT
         KW_PUBLIC
+        KW_STATIC
+        KW_PRIVATE
         KW_INNER
         KW_IMPORT
         KW_CLASS
@@ -34,14 +38,14 @@
 
 ;;;;Value statement keywords;;;;
 ;;Constructive statement keywords;;
-(define KW_SEND 'send)
-(define KW_LAMBDA 'lambda)
-(define KW_LET 'let)
-(define KW_LET* 'let*)
-(define KW_IF 'if)
-(define KW_ELSE 'else)
-(define KW_COND 'cond)
-(define KW_BEGIN 'begin)
+(define KW_SEND 'send);done
+(define KW_LAMBDA 'lambda);done
+(define KW_LET 'let);done
+(define KW_LET* 'let*);done
+(define KW_IF 'if);done
+(define KW_ELSE 'else);done
+(define KW_COND 'cond);done
+(define KW_BEGIN 'begin);done
 (define CONSTRUCTIVE_KEYWORDS
   (list KW_SEND
         KW_LAMBDA
@@ -61,7 +65,7 @@
 (define KW_MULTIPLY '*)
 (define KW_DIVIDE '/)
 (define KW_REMAINDER '%)
-(define ARITHMATIC_OPERATORS
+(define ARITHMATIC_OPERATORS;done
   (list KW_ADD
         KW_MINUS
         KW_MULTIPLY
@@ -84,7 +88,7 @@
 (define KW_SMALLER_THAN '<)
 (define KW_SMALLER_EQUAL_THAN '<=)
 (define KW_EQUAL '=)
-(define BOOLEAN_OPERATORS
+(define BOOLEAN_OPERATORS;done
   (list KW_AND
         KW_OR
         KW_NOT
