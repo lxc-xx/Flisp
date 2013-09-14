@@ -27,10 +27,13 @@
         [(eq? head KW_CLASS_VAR) (compile-class-var (cdr fl) indent)]
         [(eq? head KW_DEFINE) (compile-define (cdr fl) indent)]
         [(eq? head KW_VAR) (compile-var (cdr fl) indent)]
+        [(eq? head KW_SET!) (compile-set! (cdr fl) indent)]
         [(eq? head KW_SEND) (compile-send (cdr fl) indent)]
         [(eq? head KW_LAMBDA) (compile-lambda (cdr fl) indent)]
         [(eq? head KW_LET) (compile-let (cdr fl) indent)]
         [(eq? head KW_LET*) (compile-let* (cdr fl) indent)]
+        [(eq? head KW_IF) (compile-if (cdr fl) indent)]
+        [(eq? head KW_COND) (compile-cond (cdr fl) indent)]
         [(arithmatic-operator? head) (compile-arith fl indent)]
         [(boolean-operator? head) (compile-bool fl indent)]
         [else (compile-apply fl indent)]))))
@@ -39,23 +42,21 @@
 (define (compile-apply fl [indent 0])
   (if (empty? fl)
     ""
-    (let ([func (if (list? (car fl))
-                  (compile-expression (car fl))
-                  (~s (car fl)))]
+    (let ([func (compile-sub-body (car fl))]
           [argv (cdr fl)])
       (string-append (make-indent indent)
                      func
                      "( "
                      (string-join (map (lambda (x)
-                                         (if (list? x)
-                                           (compile-expression x)
-                                           (~s x))) 
+                                         (compile-sub-body x indent))
                                        argv)
                                   ", ")
                      " )"))))
 (module+ main
          ;(display (compile-expression '((lambda (x y) (+ x y)) 1 2)))
+         ;(newline)
          ;(display (compile-expression '(a 1 2 3)))
+         ;(newline)
          )
                      
 
@@ -155,11 +156,9 @@
 (define (compile-return-body fl [indent 0])
   (cond [(empty? fl) ""] 
         [(= (length fl) 1) (string-append (make-indent indent) 
-                                          "return " 
-                                          (if (list? (car fl))
-                                            (compile-expression (car fl))
-                                            (~s (car fl)))
-                                          ";")]
+                                          "return (" 
+                                          (compile-sub-body (car fl) indent)
+                                          ");")]
                                         
         [else (string-append (compile-expression (car fl) indent) 
                              "\n" 
@@ -167,6 +166,11 @@
 (module+ main
          ;(display (compile-return-body '((define a 12) (define b 3) (+ a b))))
          )
+
+(define (compile-sub-body fl [indent 0])
+  (if (list? fl)
+    (string-append "\n" (compile-expression fl (+ indent 1)))
+    (~s fl)))
 
 ;(class-method method-name (arg1 arg2 ...) ...)
 (define (compile-class-method fl [indent 0]) 0)
@@ -181,9 +185,7 @@
                      "private var "
                      (~s variable)
                      " :* = "
-                     (if (list? initial-value)
-                       (compile-expression initial-value)
-                       (~s initial-value))
+                     (compile-sub-body initial-value indent)
                      ";"))))
 
 ;(define constant value)
@@ -195,10 +197,8 @@
       (string-append (make-indent indent)
                      "const "
                      (~s variable)
-                     " :* = \n"
-                     (if (list? initial-value)
-                       (compile-expression initial-value (+ indent 1))
-                       (~s initial-value))
+                     " :* = "
+                     (compile-sub-body initial-value indent)
                      ";"))))
 
 ;(var variable initial-value)
@@ -211,7 +211,7 @@
                      "var "
                      (~s variable)
                      " :* = "
-                     (~s initial-value)
+                     (compile-sub-body initial-value indent)
                      ";"))))
 (module+ main
          ;(display (compile-expression '(class-var a 12) 1))
@@ -220,7 +220,18 @@
          )
 
 ;(set! variable value)
-(define (compile-set! fl) 0)
+(define (compile-set! fl [indent 0])
+  (let ([variable (car fl)]
+        [value (cadr fl)])
+    (string-append (make-indent indent)
+                   (~s variable)
+                   " = "
+                   (compile-sub-body value indent)
+                   ";")))
+
+(module+ main
+         (display (compile-expression '(set! a 1)))
+         )
 
 ;;;;;;;;;;;;;;;;;Value Statement;;;;;;;;;;;;;;;;;;
 ;(send object method arg1 arg2 ...)
@@ -231,15 +242,19 @@
           [method (cadr fl)]
           [argv (cddr fl)])
       (string-append (make-indent indent)
+                     "("
                      (~s object)
                      "."
                      (~s method)
                      "("
-                     (string-join (map ~s argv) ", ")
-                     ")"))))
+                     (string-join (map (lambda (x)
+                                         (compile-sub-body x indent)) 
+                                       argv) 
+                                  ", ")
+                     "))"))))
 
 (module+ main
-         ;(display (compile-expression '(send a b 1 2 3)))
+         ;(display (compile-expression '(send a b 1 (lambda (a b) (+ a 3 b)) 3)))
          )
 
 ;(lambda (arg1 arg2...) body)
@@ -249,7 +264,7 @@
     (let ([argv (car fl)]
           [body (cdr fl)])
       (string-append (string-append (make-indent indent)
-                                    "function(" 
+                                    "(function(" 
                                     (string-join (map (lambda (arg) 
                                                         (string-append (~s arg) ":*")) 
                                                       argv) 
@@ -258,7 +273,7 @@
                      (compile-return-body body (+ indent 1))
                      (string-append "\n" 
                                     (make-indent indent)
-                                    "}")))))
+                                    "})")))))
 (module+ main
          ;(display (compile-expression '(lambda (x y) (define c 1) (define b 2) (lambda (m n) (+ x y c b m n)))))
          )
@@ -281,9 +296,7 @@
                    (string-append (make-indent indent)
                                   "}("
                                   (string-join (map (lambda (x)
-                                                      (if (list? (cadr x))
-                                                        (begin (debug x) (compile-expression (cadr x)))
-                                                        (~s (cadr x))))
+                                                      (compile-sub-body (cadr x) indent))
                                                     argv)
                                                ", ")
                                   "))"))))
@@ -291,6 +304,7 @@
 
 (module+ main
          ;(display (compile-expression '(let ([a 1] [b 2]) (+ a b))))
+         ;(newline)
          )
 
 ;(let* ([local1 value1]...) body)
@@ -303,10 +317,8 @@
                                        (string-append (make-indent (+ 1 indent))
                                                       "var "
                                                       (~s (car x))
-                                                      " :* = "
-                                                      (if (list? (cadr x))
-                                                        (compile-expression (cadr x))
-                                                        (~s (cadr x)))
+                                                      " :* = " 
+                                                      (compile-sub-body (cadr x) indent)
                                                       ";\n"))
                                      argv)
                                 "")
@@ -316,22 +328,52 @@
                                   "}())"))))
 
 (module+ main
-         (display (compile-expression '(let* ([f (lambda (x) (* 2 x))] [y 2]) (lambda (z)
-                                                                                (define a 1)
-                                                                                (define b (lambda () "hello"))
-                                                                                (+ (f y) z))) ))
+         ;(display (compile-expression '(let* ([f (lambda (x) (* 2 x))] [y 2]) (lambda (z) (var f (lambda (m) (+ 1 m))) (define a 1) (define b (lambda () "hello")) (+ (f y) z))) ))
          )
 
 ;(if condition then else)
-(define (comiple-if fl) 
+(define (compile-if fl [indent 0]) 
   (let ([condition (car fl)]
         [then-clause (cadr fl)]
-        [else-clause (cadr fl)])
-    0
-  ))
+        [else-clause (caddr fl)])
+    (string-append "(function():*{\n" 
+                   (make-indent (+ 1 indent)) 
+                   "if (" 
+                   (compile-sub-body condition (+ 1 indent)) 
+                   ") {\n" 
+                   (compile-return-body (list then-clause) (+ 1 indent)) 
+                   "} else {\n" 
+                   (compile-return-body (list else-clause) (+ 1 indent)) 
+                   "}}())")))
+
+(module+ main
+         ;(display (compile-expression '(if (> 1 2) (+ 3 4) (+ 5 6))))
+         )
 
 ;(cond [cond1 then1] [cond2 then2] ...)
-(define (compile-cond fl) 0)
+(define (compile-cond fl [indent 0]) 
+  ;[cond value]
+  (define (compile-cond-body fl [indent 0])
+    (let ([condition (if (eq? (car fl) KW_ELSE)
+                       '(= 1 1)
+                       (car fl))]
+          [value (cadr fl)])
+      (string-append (make-indent indent)
+                     "if("
+                     (compile-sub-body condition (+ 1 indent))
+                     "){\n"
+                     (compile-return-body (list value) (+ 1 indent))
+                     "}")))
+  (string-append "(function():*{\n"
+                 (string-join (map (lambda (x)
+                                     (compile-cond-body x (+ indent 1)))
+                                   fl)
+                              "\n")
+                 "}())"))
+
+(module+ main
+         ;(display (compile-expression '(cond [(> 1 2) (+ 1 2)] [(= 1 2) (- 4 5)] [(= 4 5) (* 5 6)] [else (- 0 9)])))
+         )
 
 ;(op a b c ...)
 (define (compile-multiple-operator fl [indent 0])
@@ -342,9 +384,7 @@
       (string-append (make-indent indent) 
                      "( " 
                      (string-join (map (lambda (x) 
-                                         (if (list? x) 
-                                           (compile-expression x) 
-                                           (~s x))) 
+                                         (compile-sub-body x indent))
                                        argv) 
                                   (string-append " "
                                                  (~s op)
@@ -360,9 +400,7 @@
                      "( "
                      (~s op)
                      " "
-                     (if (list? arg)
-                       (compile-expression arg)
-                       (~s arg))
+                     (compile-sub-body arg indent)
                      " )"))))
 
 (define (compile-arith fl [indent 0])
@@ -383,7 +421,11 @@
          )
 
 ;(begin body1 body2...)
-(define (compile-begin fl) 0)
+(define (compile-begin fl [indent 0]) 
+  (string-append 
+    "(function():*{"
+    (compile-return-body fl (+ 1 indent))
+    "}())"))
 
 
 (module+ main

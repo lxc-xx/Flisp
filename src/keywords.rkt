@@ -4,13 +4,13 @@
 
 (provide (all-defined-out))
 ;;;;Non-value statement keywords;;;;
-(define KW_PACKAGE 'package)
-(define KW_DEFAULT 'default)
-(define KW_PUBLIC 'public)
-(define KW_INNER 'inner)
-(define KW_IMPORT 'import)
-(define KW_CLASS 'class)
-(define KW_CLASS_INIT 'class-init)
+(define KW_PACKAGE 'package);done
+(define KW_DEFAULT 'default);done
+(define KW_PUBLIC 'public);done
+(define KW_INNER 'inner);done
+(define KW_IMPORT 'import);done
+(define KW_CLASS 'class);done
+(define KW_CLASS_INIT 'class-init);done
 (define KW_CLASS_METHOD 'class-method)
 (define KW_CLASS_VAR 'class-var)
 (define KW_DEFINE 'define)
@@ -39,6 +39,7 @@
 (define KW_LET 'let)
 (define KW_LET* 'let*)
 (define KW_IF 'if)
+(define KW_ELSE 'else)
 (define KW_COND 'cond)
 (define KW_BEGIN 'begin)
 (define CONSTRUCTIVE_KEYWORDS
@@ -47,6 +48,7 @@
         KW_LET
         KW_LET
         KW_IF 
+        KW_ELSE
         KW_COND
         KW_BEGIN))
 (define (constructive-keyword? op)
