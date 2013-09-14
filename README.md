@@ -1,6 +1,6 @@
 Flisp
 =====
 
-Flisp = Flash + Lisp
+Flisp is a **[Lisp](http://goo.gl/psHHIw)** compiler for **[Actionscript Virtual Machine (AVM)](http://goo.gl/rBm5UQ)**.  
 
-Flisp is a platform enabling you to program lisp in Flash platform
+Flisp is still in development. Release version should be available by October, 2013.
