@@ -7,14 +7,14 @@
 (define KW_PACKAGE 'package);done
 (define KW_DEFAULT 'default);done
 (define KW_PUBLIC 'public);done
-(define KW_PRIVATE 'private)
-(define KW_PROTECTED 'protected)
-(define KW_STATIC 'static)
+(define KW_PRIVATE 'private);done
+(define KW_PROTECTED 'protected);done
+(define KW_STATIC 'static);
 (define KW_INNER 'inner);done
 (define KW_IMPORT 'import);done
 (define KW_CLASS 'class);done
 (define KW_INIT 'init);done
-(define KW_METHOD 'method)
+(define KW_METHOD 'method);done
 (define KW_FIELD 'field);done
 (define KW_DEFINE 'define);done
 (define KW_VAR 'var);done
@@ -48,6 +48,7 @@
 (define KW_ELSE 'else);done
 (define KW_COND 'cond);done
 (define KW_BEGIN 'begin);done
+(define KW_NEW 'new);done
 (define CONSTRUCTIVE_KEYWORDS
   (list KW_SEND
         KW_LAMBDA
@@ -56,7 +57,9 @@
         KW_IF 
         KW_ELSE
         KW_COND
-        KW_BEGIN))
+        KW_BEGIN
+        KW_NEW
+        ))
 (define (constructive-keyword? op)
   (make-boolean (member op CONSTRUCTIVE_KEYWORDS)))
 

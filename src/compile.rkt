@@ -33,6 +33,8 @@
         [(eq? head KW_LET*) (compile-let* (cdr fl) indent)]
         [(eq? head KW_IF) (compile-if (cdr fl) indent)]
         [(eq? head KW_COND) (compile-cond (cdr fl) indent)]
+        [(eq? head KW_BEGIN) (compile-begin (cdr fl) indent)]
+        [(eq? head KW_NEW) (compile-new (cdr fl) indent)]
         [(arithmatic-operator? head) (compile-arith fl indent)]
         [(boolean-operator? head) (compile-bool fl indent)]
         [else (compile-apply fl indent)]))))
@@ -133,20 +135,19 @@
       (string-append (string-append (make-indent indent) 
                                     "public function " 
                                     (~s class-name) 
-                                    "( " 
+                                    "(" 
                                     (string-join (map 
                                                    (lambda 
                                                      (arg) 
                                                      (string-append (~s arg) ":*")) 
                                                    argv) 
-                                                 ", "))
-                                    " ) {\n"
-                     (string-append (make-indent (+ 1 indent))
-                                    "const self:Object = this;\n")
-                     (compile body (+ indent 1))
+                                                 ", ")) 
+                     " ) {\n" 
+                     (string-append (make-indent (+ 1 indent)) 
+                                    "const self:* = this;\n") 
+                     (compile body (+ indent 1)) 
                      (string-append (make-indent indent) 
-                                    "}"
-                                    )))))
+                                    "}")))))
 
 (module+ main
          ;(display (compile-expression '(class-init Test (a b c)) 1))
@@ -161,7 +162,7 @@
                                           ");")]
                                         
         [else (string-append (compile-expression (car fl) indent) 
-                             "\n" 
+                             ";\n" 
                              (compile-return-body (cdr fl) indent))]))
 (module+ main
          ;(display (compile-return-body '((define a 12) (define b 3) (+ a b))))
@@ -195,6 +196,8 @@
                                                       argv) 
                                                  ", ") 
                                     "):*{\n")
+                     (string-append (make-indent (+ 1 indent)) 
+                                    "const self:* = this;\n") 
                      (compile-return-body body (+ indent 1))
                      (string-append "\n" 
                                     (make-indent indent)
@@ -455,6 +458,19 @@
     "(function():*{"
     (compile-return-body fl (+ 1 indent))
     "}())"))
+
+;(new Class-name arg1 arg2...)
+(define (compile-new fl [indent 0])
+  (let ([name (car fl)]
+        [argv (cdr fl)])
+    (string-append "( new "
+                   (~s name)
+                   "("
+                   (string-join (map (lambda (x) 
+                                       (compile-sub-body x indent)) 
+                                     argv)
+                                ", ")
+                   "))")))
 
 
 (module+ main
