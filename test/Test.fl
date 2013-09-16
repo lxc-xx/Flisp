@@ -1,9 +1,0 @@
-(package default
-         (import flash.display.Sprite) 
-         (import flash.text.TextField) 
-         (class public Sprite Test 
-                (init Test () (let ([text_field (new TextField)]) 
-                                 (begin 
-                                   (set! text_field.text "")
-                                   (send self addChild text_field)
-                                   0)))))
