@@ -8,7 +8,7 @@
 (define (flispc argv)
   (if 
     (not (= (vector-length argv) 2))
-    (begin (display "Usage: flispc flisp_source_file output_actionscript_file\n") (exit 1))
+    (begin (display "Usage: flispc <flisp_source_file> <output_actionscript_file>\n") (exit 1))
     (let* (
            [input-file-path (vector-ref argv 0)]
            [output-file-path (vector-ref argv 1)]
